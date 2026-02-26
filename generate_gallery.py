@@ -122,7 +122,7 @@ def fetch_album_images(url: str) -> tuple[list[dict], str]:
     # Combine DOM-extracted URLs with regex sweep of raw HTML
     all_urls = set(img_srcs)
     regex_hits = re.findall(
-        r'https://lh3\.googleusercontent\.com/[A-Za-z0-9_\-/]+'
+        r'https://lh3\.googleusercontent\.com/pw/[A-Za-z0-9_\-/]+'
         r'(?:=[A-Za-z0-9_\-]+)?',
         html
     )
