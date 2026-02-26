@@ -100,7 +100,8 @@ def fetch_album_images(url: str) -> tuple[list[dict], str]:
         time.sleep(1)
 
         # Extract image URLs from all <img> tags in the rendered DOM.
-        # Google Photos renders thumbnails as <img src="https://lh3.googleusercontent.com/...">
+        # Google Photos renders thumbnails as <img src="https://lh3.googleusercontent.com/pw/...">
+        # Exclude any <img> whose title attribute contains "(Owner)" — that's the user profile photo.
         print("  Extracting image URLs...")
         img_srcs = page.evaluate("""
             () => {
@@ -108,8 +109,7 @@ def fetch_album_images(url: str) -> tuple[list[dict], str]:
                 return imgs
                     .filter(img => !(img.title || '').includes('(Owner)'))
                     .map(img => img.src || img.getAttribute('src') || '')
-                    .filter(src => src.includes('lh3.googleusercontent.com/pw'))
-                    .filter(src => !(src.includes('s45-p-no')));
+                    .filter(src => src.includes('lh3.googleusercontent.com/pw/'));
             }
         """)
 
@@ -238,6 +238,20 @@ def build_gallery_html(
         .interest-body p {{ font-size: 0.95rem; color: #4a4a48; line-height: 1.75; }}
 
         /* Masonry gallery */
+        .gallery-scroll {{
+          max-height: 520px;
+          overflow-y: auto;
+          padding-right: 0.5rem;
+          border: 1px solid var(--rule);
+          border-radius: 2px;
+          padding: 1rem;
+          scrollbar-width: thin;
+          scrollbar-color: var(--rule) transparent;
+        }}
+        .gallery-scroll::-webkit-scrollbar {{ width: 4px; }}
+        .gallery-scroll::-webkit-scrollbar-track {{ background: transparent; }}
+        .gallery-scroll::-webkit-scrollbar-thumb {{ background: var(--rule); border-radius: 2px; }}
+        .gallery-scroll::-webkit-scrollbar-thumb:hover {{ background: var(--muted); }}
         .gallery {{ columns: 3 160px; column-gap: 0.6rem; }}
         .gal-item {{ break-inside: avoid; margin-bottom: 0.6rem; cursor: pointer; overflow: hidden; border-radius: 2px; background: var(--rule); }}
         .gal-item img {{ display: block; width: 100%; height: auto; transition: transform 0.35s ease, opacity 0.3s; opacity: 0; }}
@@ -314,7 +328,93 @@ def build_gallery_html(
               <div class="interest-body">
                 <h3>Title of Interest</h3>
                 <p>A sentence or two about what draws you to this. Keep it personal — this is where you get to sound like a human, not a resume.</p>
+              
+              <!-- ── Photo gallery ── -->
+          <div class="section-wrap">
+            <div class="section-header">
+              <span class="section-label">{album_title}</span>
+              <span class="section-rule"></span>
+              <span class="image-count">{len(images)}&nbsp;photos</span>
+            </div>
+
+            <div class="gallery-scroll">
+              <div class="gallery">
+    {figures_html}
               </div>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+
+      <!-- Lightbox -->
+        <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+          <button id="lb-close" aria-label="Close">&times;</button>
+          <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
+          <img id="lb-img" src="" alt="" />
+          <p id="lb-counter"></p>
+          <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
+        </div>
+
+        <footer>
+          <div class="container">
+            <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
+            <ul class="footer-links">
+              <li><a href="mailto:hinsenkamp@gmail.com">Email</a></li>
+              <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a></li>
+            </ul>
+          </div>
+        </footer>
+
+        <script>
+          // Lazy-load fade-in
+          document.querySelectorAll('.gal-item img').forEach(img => {{
+            if (img.complete) img.classList.add('loaded');
+            else img.addEventListener('load', () => img.classList.add('loaded'));
+          }});
+
+          const IMAGES = {js_images};
+
+          const lb      = document.getElementById('lightbox');
+          const lbImg   = document.getElementById('lb-img');
+          const lbCount = document.getElementById('lb-counter');
+          let current   = 0;
+
+          function openLightbox(i) {{
+            current = i; showImage();
+            lb.classList.add('open');
+            document.body.style.overflow = 'hidden';
+          }}
+          function closeLightbox() {{
+            lb.classList.remove('open');
+            document.body.style.overflow = '';
+          }}
+          function showImage() {{
+            lbImg.src = IMAGES[current].src;
+            lbCount.textContent = (current + 1) + ' / ' + IMAGES.length;
+          }}
+          function prev() {{ current = (current - 1 + IMAGES.length) % IMAGES.length; showImage(); }}
+          function next() {{ current = (current + 1) % IMAGES.length; showImage(); }}
+
+          document.querySelectorAll('.gal-item').forEach(fig =>
+            fig.addEventListener('click', () => openLightbox(+fig.dataset.index))
+          );
+          document.getElementById('lb-close').addEventListener('click', closeLightbox);
+          document.getElementById('lb-prev').addEventListener('click', prev);
+          document.getElementById('lb-next').addEventListener('click', next);
+          lb.addEventListener('click', e => {{ if (e.target === lb) closeLightbox(); }});
+          document.addEventListener('keydown', e => {{
+            if (!lb.classList.contains('open')) return;
+            if (e.key === 'ArrowLeft')  prev();
+            if (e.key === 'ArrowRight') next();
+            if (e.key === 'Escape')     closeLightbox();
+          }});
+        </script>
+              
+              
+              </div>
+              
             </div>
             <div class="interest-entry">
               <div class="interest-label">Interest two</div>
@@ -332,89 +432,7 @@ def build_gallery_html(
             </div>
           </div>
 
-          <!-- ── Photo gallery ── -->
-          <div class="section-wrap">
-            <div class="section-header">
-              <span class="section-label">{album_title}</span>
-              <span class="section-rule"></span>
-              <span class="image-count">{len(images)}&nbsp;photos</span>
-            </div>
-
-            <div class="gallery">
-    {figures_html}
-            </div>
-
-            <a class="album-link" href="{album_url}" target="_blank" rel="noopener">
-              View full album in Google Photos &rarr;
-            </a>
-          </div>
-
-        </div>
-      </main>
-
-      <!-- Lightbox -->
-      <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
-        <button id="lb-close" aria-label="Close">&times;</button>
-        <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
-        <img id="lb-img" src="" alt="" />
-        <p id="lb-counter"></p>
-        <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
-      </div>
-
-      <footer>
-        <div class="container">
-          <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
-          <ul class="footer-links">
-            <li><a href="mailto:hinsenkamp@gmail.com">Email</a></li>
-            <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a></li>
-          </ul>
-        </div>
-      </footer>
-
-      <script>
-        // Lazy-load fade-in
-        document.querySelectorAll('.gal-item img').forEach(img => {{
-          if (img.complete) img.classList.add('loaded');
-          else img.addEventListener('load', () => img.classList.add('loaded'));
-        }});
-
-        const IMAGES = {js_images};
-
-        const lb      = document.getElementById('lightbox');
-        const lbImg   = document.getElementById('lb-img');
-        const lbCount = document.getElementById('lb-counter');
-        let current   = 0;
-
-        function openLightbox(i) {{
-          current = i; showImage();
-          lb.classList.add('open');
-          document.body.style.overflow = 'hidden';
-        }}
-        function closeLightbox() {{
-          lb.classList.remove('open');
-          document.body.style.overflow = '';
-        }}
-        function showImage() {{
-          lbImg.src = IMAGES[current].src;
-          lbCount.textContent = (current + 1) + ' / ' + IMAGES.length;
-        }}
-        function prev() {{ current = (current - 1 + IMAGES.length) % IMAGES.length; showImage(); }}
-        function next() {{ current = (current + 1) % IMAGES.length; showImage(); }}
-
-        document.querySelectorAll('.gal-item').forEach(fig =>
-          fig.addEventListener('click', () => openLightbox(+fig.dataset.index))
-        );
-        document.getElementById('lb-close').addEventListener('click', closeLightbox);
-        document.getElementById('lb-prev').addEventListener('click', prev);
-        document.getElementById('lb-next').addEventListener('click', next);
-        lb.addEventListener('click', e => {{ if (e.target === lb) closeLightbox(); }});
-        document.addEventListener('keydown', e => {{
-          if (!lb.classList.contains('open')) return;
-          if (e.key === 'ArrowLeft')  prev();
-          if (e.key === 'ArrowRight') next();
-          if (e.key === 'Escape')     closeLightbox();
-        }});
-      </script>
+          
 
     </body>
     </html>
