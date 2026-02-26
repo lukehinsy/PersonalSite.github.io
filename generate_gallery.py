@@ -324,39 +324,64 @@ def build_gallery_html(
               <span class="section-rule"></span>
             </div>
             <div class="interest-entry">
-              <div class="interest-label">Interest one</div>
+             <div class="interest-label">Photography</div>
               <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>A sentence or two about what draws you to this. Keep it personal — this is where you get to sound like a human, not a resume.</p>
-              
+                <h3>Because everyone thinks they're a <u><b>P</b></u>hotographer</h3>
+                <p>Like many, many, many people, I enjoy photography.  I do, however, try to adhere to the mentality of <u>making</u> photos and not <i>taking</i> them, putting effort into a photo rather than capturing a snapshot. </p>
+                
               <!-- ── Photo gallery ── -->
-          <div class="section-wrap">
-            <div class="section-header">
-              <span class="section-label">{album_title}</span>
-              <span class="section-rule"></span>
-              <span class="image-count">{len(images)}&nbsp;photos</span>
-            </div>
+              <div class="section-wrap">
+                <div class="section-header">
+                  <span class="section-label">{album_title}</span>
+                  <span class="section-rule"></span>
+                  <span class="image-count">{len(images)}&nbsp;photos</span>
+                </div>
 
-            <div class="gallery-scroll">
-              <div class="gallery">
-    {figures_html}
+                <div class="gallery-scroll">
+                  <div class="gallery">
+                    {figures_html}
+                  </div>
+                </div>
+
               </div>
-            </div>
 
+              </div>
+            </main>
+
+          <!-- Lightbox -->
+          <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+            <button id="lb-close" aria-label="Close">&times;</button>
+            <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
+            <img id="lb-img" src="" alt="" />
+            <p id="lb-counter"></p>
+            <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
           </div>
 
+              
         </div>
-      </main>
+              
+      </div>
+    </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest two</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
+              </div>
+            </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest three</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
+              </div>
+            </div>
+          </div>
 
-      <!-- Lightbox -->
-        <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
-          <button id="lb-close" aria-label="Close">&times;</button>
-          <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
-          <img id="lb-img" src="" alt="" />
-          <p id="lb-counter"></p>
-          <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
-        </div>
+          
 
+    </body>
+    
         <footer>
           <div class="container">
             <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
@@ -412,29 +437,6 @@ def build_gallery_html(
           }});
         </script>
               
-              
-              </div>
-              
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest two</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
-              </div>
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest three</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
-              </div>
-            </div>
-          </div>
-
-          
-
-    </body>
     </html>
     """)
 
