@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucas Hinsenkamp, PhD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:    #1a1a18;
+      --paper:  #f7f5f0;
+      --muted:  #8a8880;
+      --rule:   #dedad4;
+      --accent: #2d5a3d;
+      --serif:  'Cormorant Garamond', Georgia, serif;
+      --mono:   'DM Mono', 'Courier New', monospace;
+      --max:    720px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; scroll-behavior: smooth; }
+    body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-weight: 300; line-height: 1.7; min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(247,245,240,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: 1rem 0; }
+    nav .container { display: flex; justify-content: space-between; align-items: baseline; }
+    .nav-name { font-size: 0.78rem; font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.active { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 1px; }
+    .hero { padding: 7rem 0 6rem; }
+    .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
+    h1 { font-size: clamp(2.8rem, 8vw, 4.5rem); font-weight: 300; line-height: 1.08; letter-spacing: -0.01em; margin-bottom: 2rem; }
+    h1 em { font-style: italic; font-weight: 300; }
+    .hero-bio { font-size: 1.15rem; line-height: 1.8; color: #3a3a38; max-width: 560px; }
+    .hero-bio + .hero-bio { margin-top: 1rem; }
+    .hero-links { display: flex; gap: 1.5rem; margin-top: 2.5rem; flex-wrap: wrap; }
+    .hero-links a { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
+    .hero-links a:hover { color: var(--accent); border-color: var(--accent); }
+    footer { padding: 3rem 0; border-top: 1px solid var(--rule); }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 1.5rem; list-style: none; }
+    .footer-links a { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--ink); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
+    @media (max-width: 540px) {
+      nav .container { flex-direction: column; gap: 0.75rem; }
+      .nav-links { gap: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a class="nav-name" href="index.html">Lucas Hinsenkamp</a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">About</a></li>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="blog.html">Writing</a></li>
+        <li><a href="interests.html">Interests</a></li>
+      </ul>
+    </div>
+  </nav>
+  <main>
+    <div class="container">
+      <div class="hero">
+        <p class="eyebrow fade-up">About</p>
+        <h1 class="fade-up delay-1">Lucas Hinsenkamp<br /><em>PhD &mdash; Analytic Consultant</em></h1>
+        <p class="hero-bio fade-up delay-2">
+          I'm an analytic consultant with a PhD in social psychology and a habit of making complex things click. Over the past decade I've helped organizations &mdash; from scrappy research shops to large insurers &mdash; turn murky business questions into frameworks that actually get used. I like the messy middle: the part where the problem isn't fully defined yet and you have to earn the insight rather than inherit it.
+        </p>
+        <p class="hero-bio fade-up delay-3">
+          These days I'm leading analytics at Nationwide, working across consumer segmentation, sales optimization, and a handful of things that didn't have names when I started them. I care a lot about rigor, but I care just as much about making sure the work lands &mdash; with stakeholders, in decisions, in the world.
+        </p>
+        <div class="hero-links fade-up delay-4">
+          <a href="/cdn-cgi/l/email-protection#2e4647405d4b40454f435e6e49434f4742004d4143">Email</a>
+          <a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="cv.html">View CV</a>
+          <a href="/resume.pdf" target="_blank">Download PDF</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="container">
+      <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
+      <ul class="footer-links">
+        <li><a href="/cdn-cgi/l/email-protection#5038393e23353e3b313d2010373d31393c7e333f3d">Email</a></li>
+        <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank

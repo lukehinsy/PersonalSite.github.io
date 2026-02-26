@@ -1,0 +1,60 @@
+name: Regenerate Photo Gallery
+
+# ── When to run ───────────────────────────────────────────────────────────────
+on:
+  # Run automatically every Sunday at midnight UTC (keeps gallery fresh)
+  schedule:
+    - cron: "0 0 * * 0"
+
+  # Run whenever you push changes to main
+  push:
+    branches: [main]
+
+  # Allow manual trigger from the Actions tab in GitHub
+  workflow_dispatch:
+
+# ── Job ───────────────────────────────────────────────────────────────────────
+jobs:
+  build-gallery:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to commit the generated interests.html back
+
+    steps:
+      # 1. Check out your repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      # 4. Run the gallery generator
+      #    ALBUM_URL is stored as a GitHub Actions secret so it's not
+      #    hardcoded in public source code.
+      #    To set it: Repo → Settings → Secrets and variables → Actions → New secret
+      #    Name: PHOTOS_ALBUM_URL   Value: your full Google Photos album URL
+      - name: Generate gallery
+        env:
+          ALBUM_URL: ${{ secrets.PHOTOS_ALBUM_URL }}
+        run: |
+          python generate_gallery.py \
+            --album "$ALBUM_URL" \
+            --out interests.html
+
+      # 5. Commit the updated interests.html back to the repo
+      #    Only commits if interests.html actually changed (avoids noise)
+      - name: Commit updated gallery
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add interests.html
+          # Only commit if there's something new
+          git diff --cached --quiet || git commit -m "chore: regenerate photo gallery [skip ci]"
+          git push

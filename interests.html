@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interests &mdash; Lucas Hinsenkamp, PhD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:    #1a1a18;
+      --paper:  #f7f5f0;
+      --muted:  #8a8880;
+      --rule:   #dedad4;
+      --accent: #2d5a3d;
+      --serif:  'Cormorant Garamond', Georgia, serif;
+      --mono:   'DM Mono', 'Courier New', monospace;
+      --max:    720px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; scroll-behavior: smooth; }
+    body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-weight: 300; line-height: 1.7; min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+
+    /* Nav */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(247,245,240,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: 1rem 0; }
+    nav .container { display: flex; justify-content: space-between; align-items: baseline; }
+    .nav-name { font-size: 0.78rem; font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.active { color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 1px; }
+
+    /* Page header */
+    .page-header { padding: 5rem 0 3.5rem; border-bottom: 1px solid var(--rule); }
+    .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    h1 { font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; }
+    h1 em { font-style: italic; }
+    .page-header p.sub { font-size: 1.05rem; color: #5a5a58; max-width: 500px; margin-top: 1.25rem; line-height: 1.75; }
+
+    /* Sections */
+    .interests-section { padding: 3.5rem 0; border-bottom: 1px solid var(--rule); }
+    .section-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 2.5rem; }
+    .section-label { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+    .section-rule { flex: 1; height: 1px; background: var(--rule); }
+
+    /* Interest blurbs */
+    .interest-entry { padding: 2rem 0; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 140px 1fr; gap: 0 2rem; }
+    .interest-entry:first-of-type { border-top: none; padding-top: 0; }
+    .interest-label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); padding-top: 0.25rem; }
+    .interest-body h3 { font-size: 1.15rem; font-weight: 400; margin-bottom: 0.4rem; }
+    .interest-body p { font-size: 0.95rem; color: #4a4a48; line-height: 1.75; }
+
+    /* Photo album */
+    .album-section { padding: 3.5rem 0; }
+    .album-frame-wrap {
+      position: relative;
+      width: 100%;
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      overflow: hidden;
+      background: #eeebe5;
+    }
+    .album-frame-wrap iframe {
+      display: block;
+      width: 100%;
+      height: 560px;
+      border: none;
+    }
+
+    /* Fallback card — shown if iframe fails or as a complement */
+    .album-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: 2.5rem;
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      background: #f0ede7;
+    }
+    .album-fallback-icon {
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--muted);
+    }
+    .album-fallback h3 {
+      font-size: 1.3rem;
+      font-weight: 400;
+    }
+    .album-fallback p {
+      font-size: 0.95rem;
+      color: #5a5a58;
+      line-height: 1.7;
+      max-width: 420px;
+    }
+    .album-btn {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--paper);
+      background: var(--accent);
+      padding: 0.65rem 1.25rem;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: opacity 0.2s;
+    }
+    .album-btn:hover { opacity: 0.82; }
+    .album-note {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer { padding: 3rem 0; border-top: 1px solid var(--rule); }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 1.5rem; list-style: none; }
+    .footer-links a { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--ink); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { opacity: 0; animation: fadeUp 0.6s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+
+    @media (max-width: 540px) {
+      nav .container { flex-direction: column; gap: 0.75rem; }
+      .nav-links { gap: 1.25rem; }
+      .interest-entry { grid-template-columns: 1fr; gap: 0.3rem; }
+      .album-frame-wrap iframe { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <a class="nav-name" href="index.html">Lucas Hinsenkamp</a>
+      <ul class="nav-links">
+        <li><a href="index.html">About</a></li>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="blog.html">Writing</a></li>
+        <li><a href="interests.html" class="active">Interests</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+
+      <div class="page-header">
+        <p class="eyebrow fade-up">Personal</p>
+        <h1 class="fade-up delay-1">Outside<br /><em>the work</em></h1>
+        <p class="sub fade-up delay-2">The things that refuel me, keep me curious, and occasionally make their way into how I think about problems.</p>
+      </div>
+
+      <!-- Personal interests -->
+      <div class="interests-section">
+        <div class="section-header">
+          <span class="section-label">Interests</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <!-- Replace / add / remove entries to match your actual interests -->
+        <div class="interest-entry">
+          <div class="interest-label">Interest one</div>
+          <div class="interest-body">
+            <h3>Title of Interest</h3>
+            <p>A sentence or two about what draws you to this and what it means to you. Keep it personal — this is where you get to sound like a human, not a resume.</p>
+          </div>
+        </div>
+
+        <div class="interest-entry">
+          <div class="interest-label">Interest two</div>
+          <div class="interest-body">
+            <h3>Title of Interest</h3>
+            <p>Same idea here. What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
+          </div>
+        </div>
+
+        <div class="interest-entry">
+          <div class="interest-label">Interest three</div>
+          <div class="interest-body">
+            <h3>Title of Interest</h3>
+            <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are beyond your professional identity.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photo album -->
+      <div class="album-section">
+        <div class="section-header">
+          <span class="section-label">Photos</span>
+          <span class="section-rule"></span>
+        </div>
+
+        <!--
+          ── HOW TO USE THIS SECTION ──────────────────────────────────────────
+          Google Photos blocks direct iframe embedding. You have two options:
+
+          OPTION A — Link card (always works, recommended):
+            Replace YOUR_GOOGLE_PHOTOS_ALBUM_URL below with your shared album URL.
+            The card will show a button that opens the album in a new tab.
+
+          OPTION B — Try the iframe anyway:
+            Some shared Google Photos albums load in an iframe if the URL ends
+            with "?hl=en" appended. Uncomment the <div class="album-frame-wrap">
+            block below and replace the src with your album URL + "?hl=en".
+            It may or may not work depending on your album's sharing settings.
+
+          To get your album URL: Open Google Photos → Albums → your album →
+          Share → "Create link" → copy the URL.
+          ─────────────────────────────────────────────────────────────────── -->
+
+        <!-- OPTION A: Link card (replace the href) -->
+        <div class="album-fallback">
+          <div class="album-fallback-icon">&#9724;</div>
+          <h3>Photo Album</h3>
+          <p>A collection of photos from [describe your album here — travels, projects, life outside the office]. Click below to browse the full album in Google Photos.</p>
+          <a class="album-btn" href="https://photos.app.goo.gl/da4HGvdj9d6TjSpB9" target="_blank" rel="noopener">
+            View Album &rarr;
+          </a>
+          <p class="album-note">
+            Opens in Google Photos &nbsp;&middot;&nbsp; No account required to view
+          </p>
+        </div>
+
+        <!-- OPTION B: Iframe embed (uncomment and replace src if you want to try it)
+        <div class="album-frame-wrap">  
+          <iframe
+            src="YOUR_GOOGLE_PHOTOS_ALBUM_URL?hl=en"
+            allow="fullscreen"
+            loading="lazy"
+            title="Photo album"
+          ></iframe>
+        </div>
+        -->
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
+      <ul class="footer-links">
+        <li><a href="mailto:hinsenkamp@gmail.com">Email</a></li>
+        <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>
