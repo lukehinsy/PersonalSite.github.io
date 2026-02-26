@@ -107,6 +107,7 @@ def fetch_album_images(url: str) -> tuple[list[dict], str]:
                 const imgs = Array.from(document.querySelectorAll('img'));
                 return imgs
                     .map(img => img.src || img.getAttribute('src') || '')
+                    .filter(img => !(img.title || '').includes('(Owner)'))
                     .filter(src => src.includes('lh3.googleusercontent.com'));
             }
         """)
