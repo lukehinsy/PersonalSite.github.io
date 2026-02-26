@@ -202,7 +202,7 @@ def build_gallery_html(
           --accent: #2d5a3d;
           --serif:  'Cormorant Garamond', Georgia, serif;
           --mono:   'DM Mono', 'Courier New', monospace;
-          --max:    720px;
+          --max:    900px;
         }}
         *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
         html {{ font-size: 18px; scroll-behavior: smooth; }}
@@ -296,6 +296,34 @@ def build_gallery_html(
     </head>
     <body>
 
+
+       <div id="wip-watermark">Under Construction</div>
+
+      <style>
+      #wip-watermark {{
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'DM Mono', monospace;
+        font-size: clamp(2rem, 8vw, 5rem);
+        font-weight: 400;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(155, 20, 20, 0.50);
+        pointer-events: none;        /* lets clicks pass through to page content */
+        user-select: none;
+        z-index: 9999;
+        transform: rotate(-30deg);
+        white-space: nowrap;
+      }}
+    </style>
+
+
+
+
+
       <nav>
         <div class="container">
           <a class="nav-name" href="index.html">Lucas Hinsenkamp</a>
@@ -327,7 +355,7 @@ def build_gallery_html(
              <div class="interest-label">Photography</div>
               <div class="interest-body">
                 <h3>Because everyone thinks they're a photographer</h3>
-                <p>Like many, many, many people, I enjoy photography.  I do, however, try to adhere to the mentality of <u>making</u> photos and not <i>taking</i> them, putting effort into a photo rather than capturing a snapshot. </p>
+                <p>Like many, many, many people, I enjoy photography.  Below are some of my favorites. </p>
                 
               <!-- ── Photo gallery ── -->
               <div class="section-wrap">
