@@ -52,6 +52,20 @@
         .interest-body p { font-size: 0.95rem; color: #4a4a48; line-height: 1.75; }
 
         /* Masonry gallery */
+        .gallery-scroll {
+          max-height: 520px;
+          overflow-y: auto;
+          padding-right: 0.5rem;
+          border: 1px solid var(--rule);
+          border-radius: 2px;
+          padding: 1rem;
+          scrollbar-width: thin;
+          scrollbar-color: var(--rule) transparent;
+        }
+        .gallery-scroll::-webkit-scrollbar { width: 4px; }
+        .gallery-scroll::-webkit-scrollbar-track { background: transparent; }
+        .gallery-scroll::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+        .gallery-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted); }
         .gallery { columns: 3 160px; column-gap: 0.6rem; }
         .gal-item { break-inside: avoid; margin-bottom: 0.6rem; cursor: pointer; overflow: hidden; border-radius: 2px; background: var(--rule); }
         .gal-item img { display: block; width: 100%; height: auto; transition: transform 0.35s ease, opacity 0.3s; opacity: 0; }
@@ -128,25 +142,8 @@
               <div class="interest-body">
                 <h3>Title of Interest</h3>
                 <p>A sentence or two about what draws you to this. Keep it personal — this is where you get to sound like a human, not a resume.</p>
-              </div>
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest two</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
-              </div>
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest three</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
-              </div>
-            </div>
-          </div>
 
-          <!-- ── Photo gallery ── -->
+              <!-- ── Photo gallery ── -->
           <div class="section-wrap">
             <div class="section-header">
               <span class="section-label">Photos</span>
@@ -154,7 +151,8 @@
               <span class="image-count">8&nbsp;photos</span>
             </div>
 
-            <div class="gallery">
+            <div class="gallery-scroll">
+              <div class="gallery">
           <figure class="gal-item" data-index="0"><img src="https://lh3.googleusercontent.com/pw/AP1GczM5zbbuDKQJD9grJVqGZ571IABhbK7125f6AriUMBrfnOqNMsf0DGlQ1G9MJaFNx3DY6UxO5H9W8SferKtTop2I6YPbREbV4umy95nV4t3ZmSOSQi-h=w600" alt="Photo 1" loading="lazy" /></figure>
       <figure class="gal-item" data-index="1"><img src="https://lh3.googleusercontent.com/pw/AP1GczMjZ8N3eFvUKIsDjtlucOXb6g-Suz96wf2B4Te2dpGRPKZTHGkfYLoDF8-0cXQ23gUSu2DyLd5kUYJch_HhWpFUcfotrVZ0aSustcX0hNQgtu2K4YN5=w600" alt="Photo 2" loading="lazy" /></figure>
       <figure class="gal-item" data-index="2"><img src="https://lh3.googleusercontent.com/pw/AP1GczNFAzzyAKGF2F0o_QHKe2wfGSaQqfFMa-m2JBhi5BtwaMZVX6KIcHj9e_OzoJ8dswmE7FMuPYg9BiSb5WAyrj2TKBh1sMzi_xStlIAYz0B4EOCCfxC9=w600" alt="Photo 3" loading="lazy" /></figure>
@@ -163,43 +161,41 @@
       <figure class="gal-item" data-index="5"><img src="https://lh3.googleusercontent.com/pw/AP1GczOyFN2iLNh75vFNjqFvBX-WaYF6T9-3kqy1OFGm_-6c_FBGiYHcgTPHP-_oBU49SvBo1kha-HxEJffAAzPDohjl6WtgK76Xu4IThNN63f6chnjSSjS5=w600" alt="Photo 6" loading="lazy" /></figure>
       <figure class="gal-item" data-index="6"><img src="https://lh3.googleusercontent.com/pw/AP1GczOzYzQivqrXx3pC9QyY9h2UYWu3BAkTx8KTsAHNoxQ4tfOhcSDHpqKEk9pzsmL_vUo7gvC6aLasEr2BjrlbmLT4eps54y2m3a9UvGHmbjJhQvC-wr-H=w600" alt="Photo 7" loading="lazy" /></figure>
       <figure class="gal-item" data-index="7"><img src="https://lh3.googleusercontent.com/pw/AP1GczPQOKFMe5s_NW8rgsBtk1ePCI4d5LkvWg0F5g5YIhVgPqIKLScIY9bz3109_VwqXnpWmrvF8W3iWA1jyi_tqMOa8lh3a_DaL4LqNCyudYdbynI_uVlB=w600" alt="Photo 8" loading="lazy" /></figure>
+              </div>
             </div>
 
-            <a class="album-link" href="https://photos.app.goo.gl/da4HGvdj9d6TjSpB9" target="_blank" rel="noopener">
-              View full album in Google Photos &rarr;
-            </a>
           </div>
 
         </div>
       </main>
 
       <!-- Lightbox -->
-      <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
-        <button id="lb-close" aria-label="Close">&times;</button>
-        <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
-        <img id="lb-img" src="" alt="" />
-        <p id="lb-counter"></p>
-        <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
-      </div>
-
-      <footer>
-        <div class="container">
-          <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
-          <ul class="footer-links">
-            <li><a href="mailto:hinsenkamp@gmail.com">Email</a></li>
-            <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a></li>
-          </ul>
+        <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+          <button id="lb-close" aria-label="Close">&times;</button>
+          <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
+          <img id="lb-img" src="" alt="" />
+          <p id="lb-counter"></p>
+          <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
         </div>
-      </footer>
 
-      <script>
-        // Lazy-load fade-in
-        document.querySelectorAll('.gal-item img').forEach(img => {
-          if (img.complete) img.classList.add('loaded');
-          else img.addEventListener('load', () => img.classList.add('loaded'));
-        });
+        <footer>
+          <div class="container">
+            <p class="footer-copy">&copy; 2025 Lucas Hinsenkamp</p>
+            <ul class="footer-links">
+              <li><a href="mailto:hinsenkamp@gmail.com">Email</a></li>
+              <li><a href="https://linkedin.com/in/lucashinsenkamp" target="_blank" rel="noopener">LinkedIn</a></li>
+            </ul>
+          </div>
+        </footer>
 
-        const IMAGES = [
+        <script>
+          // Lazy-load fade-in
+          document.querySelectorAll('.gal-item img').forEach(img => {
+            if (img.complete) img.classList.add('loaded');
+            else img.addEventListener('load', () => img.classList.add('loaded'));
+          });
+
+          const IMAGES = [
   {
     "src": "https://lh3.googleusercontent.com/pw/AP1GczM5zbbuDKQJD9grJVqGZ571IABhbK7125f6AriUMBrfnOqNMsf0DGlQ1G9MJaFNx3DY6UxO5H9W8SferKtTop2I6YPbREbV4umy95nV4t3ZmSOSQi-h=w1200",
     "thumb": "https://lh3.googleusercontent.com/pw/AP1GczM5zbbuDKQJD9grJVqGZ571IABhbK7125f6AriUMBrfnOqNMsf0DGlQ1G9MJaFNx3DY6UxO5H9W8SferKtTop2I6YPbREbV4umy95nV4t3ZmSOSQi-h=w600"
@@ -234,41 +230,63 @@
   }
 ];
 
-        const lb      = document.getElementById('lightbox');
-        const lbImg   = document.getElementById('lb-img');
-        const lbCount = document.getElementById('lb-counter');
-        let current   = 0;
+          const lb      = document.getElementById('lightbox');
+          const lbImg   = document.getElementById('lb-img');
+          const lbCount = document.getElementById('lb-counter');
+          let current   = 0;
 
-        function openLightbox(i) {
-          current = i; showImage();
-          lb.classList.add('open');
-          document.body.style.overflow = 'hidden';
-        }
-        function closeLightbox() {
-          lb.classList.remove('open');
-          document.body.style.overflow = '';
-        }
-        function showImage() {
-          lbImg.src = IMAGES[current].src;
-          lbCount.textContent = (current + 1) + ' / ' + IMAGES.length;
-        }
-        function prev() { current = (current - 1 + IMAGES.length) % IMAGES.length; showImage(); }
-        function next() { current = (current + 1) % IMAGES.length; showImage(); }
+          function openLightbox(i) {
+            current = i; showImage();
+            lb.classList.add('open');
+            document.body.style.overflow = 'hidden';
+          }
+          function closeLightbox() {
+            lb.classList.remove('open');
+            document.body.style.overflow = '';
+          }
+          function showImage() {
+            lbImg.src = IMAGES[current].src;
+            lbCount.textContent = (current + 1) + ' / ' + IMAGES.length;
+          }
+          function prev() { current = (current - 1 + IMAGES.length) % IMAGES.length; showImage(); }
+          function next() { current = (current + 1) % IMAGES.length; showImage(); }
 
-        document.querySelectorAll('.gal-item').forEach(fig =>
-          fig.addEventListener('click', () => openLightbox(+fig.dataset.index))
-        );
-        document.getElementById('lb-close').addEventListener('click', closeLightbox);
-        document.getElementById('lb-prev').addEventListener('click', prev);
-        document.getElementById('lb-next').addEventListener('click', next);
-        lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
-        document.addEventListener('keydown', e => {
-          if (!lb.classList.contains('open')) return;
-          if (e.key === 'ArrowLeft')  prev();
-          if (e.key === 'ArrowRight') next();
-          if (e.key === 'Escape')     closeLightbox();
-        });
-      </script>
+          document.querySelectorAll('.gal-item').forEach(fig =>
+            fig.addEventListener('click', () => openLightbox(+fig.dataset.index))
+          );
+          document.getElementById('lb-close').addEventListener('click', closeLightbox);
+          document.getElementById('lb-prev').addEventListener('click', prev);
+          document.getElementById('lb-next').addEventListener('click', next);
+          lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+          document.addEventListener('keydown', e => {
+            if (!lb.classList.contains('open')) return;
+            if (e.key === 'ArrowLeft')  prev();
+            if (e.key === 'ArrowRight') next();
+            if (e.key === 'Escape')     closeLightbox();
+          });
+        </script>
+
+
+              </div>
+
+            </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest two</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
+              </div>
+            </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest three</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
+              </div>
+            </div>
+          </div>
+
+
 
     </body>
     </html>
