@@ -138,22 +138,22 @@
               <span class="section-rule"></span>
             </div>
             <div class="interest-entry">
-              <div class="interest-label">Interest one</div>
+             <div class="interest-label">Photography</div>
               <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>A sentence or two about what draws you to this. Keep it personal — this is where you get to sound like a human, not a resume.</p>
+                <h3>Because everyone thinks they're a <u><b>P</b></u>hotographer</h3>
+                <p>Like many, many, many people, I enjoy photography.  I do, however, try to adhere to the mentality of <u>making</u> photos and not <i>taking</i> them, putting effort into a photo rather than capturing a snapshot. </p>
 
               <!-- ── Photo gallery ── -->
-          <div class="section-wrap">
-            <div class="section-header">
-              <span class="section-label">Photos</span>
-              <span class="section-rule"></span>
-              <span class="image-count">8&nbsp;photos</span>
-            </div>
+              <div class="section-wrap">
+                <div class="section-header">
+                  <span class="section-label">Photos</span>
+                  <span class="section-rule"></span>
+                  <span class="image-count">8&nbsp;photos</span>
+                </div>
 
-            <div class="gallery-scroll">
-              <div class="gallery">
-          <figure class="gal-item" data-index="0"><img src="https://lh3.googleusercontent.com/pw/AP1GczM5zbbuDKQJD9grJVqGZ571IABhbK7125f6AriUMBrfnOqNMsf0DGlQ1G9MJaFNx3DY6UxO5H9W8SferKtTop2I6YPbREbV4umy95nV4t3ZmSOSQi-h=w600" alt="Photo 1" loading="lazy" /></figure>
+                <div class="gallery-scroll">
+                  <div class="gallery">
+                          <figure class="gal-item" data-index="0"><img src="https://lh3.googleusercontent.com/pw/AP1GczM5zbbuDKQJD9grJVqGZ571IABhbK7125f6AriUMBrfnOqNMsf0DGlQ1G9MJaFNx3DY6UxO5H9W8SferKtTop2I6YPbREbV4umy95nV4t3ZmSOSQi-h=w600" alt="Photo 1" loading="lazy" /></figure>
       <figure class="gal-item" data-index="1"><img src="https://lh3.googleusercontent.com/pw/AP1GczMjZ8N3eFvUKIsDjtlucOXb6g-Suz96wf2B4Te2dpGRPKZTHGkfYLoDF8-0cXQ23gUSu2DyLd5kUYJch_HhWpFUcfotrVZ0aSustcX0hNQgtu2K4YN5=w600" alt="Photo 2" loading="lazy" /></figure>
       <figure class="gal-item" data-index="2"><img src="https://lh3.googleusercontent.com/pw/AP1GczNFAzzyAKGF2F0o_QHKe2wfGSaQqfFMa-m2JBhi5BtwaMZVX6KIcHj9e_OzoJ8dswmE7FMuPYg9BiSb5WAyrj2TKBh1sMzi_xStlIAYz0B4EOCCfxC9=w600" alt="Photo 3" loading="lazy" /></figure>
       <figure class="gal-item" data-index="3"><img src="https://lh3.googleusercontent.com/pw/AP1GczNNzwG20xFftiZyAfM4L8AJaN3TfMSqla_ixk0nGrXa4XdPEsRzMAil6wrICS7HVh1oczV_IY0JgRYk1XpABX-pPlicDTVUcQe3Jq7IHLB5QaiPlKdg=w600" alt="Photo 4" loading="lazy" /></figure>
@@ -161,22 +161,47 @@
       <figure class="gal-item" data-index="5"><img src="https://lh3.googleusercontent.com/pw/AP1GczOyFN2iLNh75vFNjqFvBX-WaYF6T9-3kqy1OFGm_-6c_FBGiYHcgTPHP-_oBU49SvBo1kha-HxEJffAAzPDohjl6WtgK76Xu4IThNN63f6chnjSSjS5=w600" alt="Photo 6" loading="lazy" /></figure>
       <figure class="gal-item" data-index="6"><img src="https://lh3.googleusercontent.com/pw/AP1GczOzYzQivqrXx3pC9QyY9h2UYWu3BAkTx8KTsAHNoxQ4tfOhcSDHpqKEk9pzsmL_vUo7gvC6aLasEr2BjrlbmLT4eps54y2m3a9UvGHmbjJhQvC-wr-H=w600" alt="Photo 7" loading="lazy" /></figure>
       <figure class="gal-item" data-index="7"><img src="https://lh3.googleusercontent.com/pw/AP1GczPQOKFMe5s_NW8rgsBtk1ePCI4d5LkvWg0F5g5YIhVgPqIKLScIY9bz3109_VwqXnpWmrvF8W3iWA1jyi_tqMOa8lh3a_DaL4LqNCyudYdbynI_uVlB=w600" alt="Photo 8" loading="lazy" /></figure>
-              </div>
-            </div>
+                  </div>
+                </div>
 
+              </div>
+
+              </div>
+            </main>
+
+          <!-- Lightbox -->
+          <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+            <button id="lb-close" aria-label="Close">&times;</button>
+            <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
+            <img id="lb-img" src="" alt="" />
+            <p id="lb-counter"></p>
+            <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
           </div>
 
-        </div>
-      </main>
 
-      <!-- Lightbox -->
-        <div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
-          <button id="lb-close" aria-label="Close">&times;</button>
-          <button class="lb-btn" id="lb-prev" aria-label="Previous">&#8592;</button>
-          <img id="lb-img" src="" alt="" />
-          <p id="lb-counter"></p>
-          <button class="lb-btn" id="lb-next" aria-label="Next">&#8594;</button>
         </div>
+
+      </div>
+    </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest two</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
+              </div>
+            </div>
+            <div class="interest-entry">
+              <div class="interest-label">Interest three</div>
+              <div class="interest-body">
+                <h3>Title of Interest</h3>
+                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
+              </div>
+            </div>
+          </div>
+
+
+
+    </body>
 
         <footer>
           <div class="container">
@@ -266,27 +291,4 @@
           });
         </script>
 
-
-              </div>
-
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest two</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
-              </div>
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest three</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
-              </div>
-            </div>
-          </div>
-
-
-
-    </body>
     </html>
