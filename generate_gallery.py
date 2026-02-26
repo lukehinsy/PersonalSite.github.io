@@ -5,167 +5,181 @@ generate_gallery.py
 Fetches a public Google Photos shared album, extracts all image URLs,
 and writes a self-contained interests.html gallery page.
 
+Uses Playwright to render the JavaScript-heavy Google Photos page,
+then scrolls to load all images before extracting URLs.
+
 Usage:
     python generate_gallery.py --album "https://photos.app.goo.gl/XXXXXX"
     python generate_gallery.py --album "https://photos.app.goo.gl/XXXXXX" --out interests.html
     python generate_gallery.py --album "https://photos.app.goo.gl/XXXXXX" --title "Hiking & Travel"
 
 Requirements:
-    pip install requests beautifulsoup4
-
-How it works:
-    Google Photos public albums embed all image metadata directly in the
-    page's HTML as a nested JavaScript data array. This script fetches that
-    page, parses out every lh3.googleusercontent.com URL, requests
-    high-resolution versions, and builds a static masonry gallery.
+    pip install playwright
+    playwright install chromium
 """
 
 import argparse
 import json
 import re
 import sys
+import time
 import textwrap
 from pathlib import Path
-from urllib.parse import urlparse
 
-try:
-    import requests
-    from bs4 import BeautifulSoup
-except ImportError:
-    print("Missing dependencies. Run:  pip install requests beautifulsoup4")
-    sys.exit(1)
+
+def check_playwright():
+    try:
+        from playwright.sync_api import sync_playwright
+        return True
+    except ImportError:
+        print("ERROR: playwright not installed.")
+        print("Run:  pip install playwright && playwright install chromium")
+        sys.exit(1)
 
 
 # ── Image extraction ──────────────────────────────────────────────────────────
 
-def fetch_album_page(url: str) -> str:
+def fetch_album_images(url: str) -> tuple[list[dict], str]:
     """
-    Follow redirects (goo.gl short links) and return the final page HTML.
-    Google Photos needs a browser-like User-Agent or it returns a redirect loop.
+    Launch a headless Chromium browser, navigate to the Google Photos album,
+    scroll to the bottom to trigger lazy-loading, then extract all image URLs
+    from the rendered DOM.
+
+    Returns (images, album_title)
     """
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "Accept-Language": "en-US,en;q=0.9",
-    }
-    resp = requests.get(url, headers=headers, timeout=20)
-    resp.raise_for_status()
-    return resp.text
-
-
-def extract_images(html: str) -> list[dict]:
-    """
-    Google Photos embeds image data in the page as a large JS data structure.
-    Image URLs follow the pattern: https://lh3.googleusercontent.com/pw/...
-    Each URL can be suffixed with sizing parameters:
-        =w800       → width 800px
-        =h600       → height 600px
-        =w800-h600  → fit within 800×600
-        =d           → original download size
-
-    Returns a list of dicts: {url, width, height, alt}
-    """
-    # Primary pattern: find all lh3.googleusercontent.com/pw/ URLs in the raw HTML
-    # These are embedded as JSON strings inside the page's <script> data
-    raw_urls = re.findall(
-        r'https://lh3\.googleusercontent\.com/pw/[A-Za-z0-9_\-]+',
-        html
-    )
-
-    # Deduplicate while preserving order
-    seen = set()
-    unique_urls = []
-    for u in raw_urls:
-        if u not in seen:
-            seen.add(u)
-            unique_urls.append(u)
-
-    if not unique_urls:
-        # Fallback: try broader googleusercontent pattern (some albums use different paths)
-        raw_urls = re.findall(
-            r'https://lh3\.googleusercontent\.com/[A-Za-z0-9_\-/]+',
-            html
-        )
-        seen = set()
-        for u in raw_urls:
-            if u not in seen and len(u) > 60:  # filter out short icon URLs
-                seen.add(u)
-                unique_urls.append(u)
-
-    if not unique_urls:
-        print("⚠️  No images found. The album may be private or the URL may be incorrect.")
-        print("   Make sure the album is set to 'Anyone with the link can view'.")
-        sys.exit(1)
-
-    # Try to extract width/height metadata from the JS data blob
-    # Google encodes image metadata as arrays: [url, width, height, ...]
-    meta_pattern = re.compile(
-        r'"(https://lh3\.googleusercontent\.com/pw/[A-Za-z0-9_\-]+)"'
-        r'[^]]*?,(\d{3,5}),(\d{3,5})'
-    )
-    meta_map = {}
-    for match in meta_pattern.finditer(html):
-        url, w, h = match.group(1), int(match.group(2)), int(match.group(3))
-        meta_map[url] = {"width": w, "height": h}
+    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
     images = []
-    for url in unique_urls:
-        meta = meta_map.get(url, {})
-        images.append({
-            "base_url": url,
-            # Display URL: request a 1200px-wide version for full quality
-            "display_url": url + "=w1200",
-            # Thumbnail URL: 600px wide for fast initial load
-            "thumb_url": url + "=w600",
-            "width": meta.get("width", 0),
-            "height": meta.get("height", 0),
-            "alt": "Photo",
-        })
+    album_title = "Photos"
 
-    print(f"✓ Found {len(images)} images")
-    return images
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            viewport={"width": 1280, "height": 900},
+            user_agent=(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+        )
+        page = context.new_page()
 
+        print(f"  Opening: {url}")
+        try:
+            page.goto(url, wait_until="networkidle", timeout=30000)
+        except PlaywrightTimeout:
+            # networkidle can time out on large albums — that's fine, content is loaded
+            print("  (networkidle timeout — continuing with what loaded)")
 
-def extract_album_title(html: str) -> str | None:
-    """Try to pull the album title from the page <title> or og:title tag."""
-    soup = BeautifulSoup(html, "html.parser")
-    og = soup.find("meta", property="og:title")
-    if og and og.get("content"):
-        return og["content"].strip()
-    if soup.title and soup.title.string:
-        t = soup.title.string.strip()
-        # Strip " - Google Photos" suffix
-        return re.sub(r"\s*[-–]\s*Google Photos$", "", t).strip() or None
-    return None
+        # Try to grab the album title from the page
+        try:
+            title_el = page.locator("h1").first
+            title_el.wait_for(timeout=5000)
+            t = title_el.inner_text().strip()
+            if t:
+                album_title = t
+        except Exception:
+            pass
+
+        # Scroll to bottom repeatedly to trigger lazy image loading
+        print("  Scrolling to load all images...")
+        prev_height = 0
+        stall_count = 0
+        while stall_count < 4:
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            time.sleep(1.5)
+            new_height = page.evaluate("document.body.scrollHeight")
+            if new_height == prev_height:
+                stall_count += 1
+            else:
+                stall_count = 0
+            prev_height = new_height
+
+        # Scroll back to top so all images are in the viewport tree
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(1)
+
+        # Extract image URLs from all <img> tags in the rendered DOM.
+        # Google Photos renders thumbnails as <img src="https://lh3.googleusercontent.com/...">
+        print("  Extracting image URLs...")
+        img_srcs = page.evaluate("""
+            () => {
+                const imgs = Array.from(document.querySelectorAll('img'));
+                return imgs
+                    .map(img => img.src || img.getAttribute('src') || '')
+                    .filter(src => src.includes('lh3.googleusercontent.com'));
+            }
+        """)
+
+        # Also sweep the full page HTML for any lh3 URLs not in <img> tags
+        # (some are in background-image styles or data attributes)
+        html = page.content()
+
+        browser.close()
+
+    # Combine DOM-extracted URLs with regex sweep of raw HTML
+    all_urls = set(img_srcs)
+    regex_hits = re.findall(
+        r'https://lh3\.googleusercontent\.com/[A-Za-z0-9_\-/]+'
+        r'(?:=[A-Za-z0-9_\-]+)?',
+        html
+    )
+    for u in regex_hits:
+        # Strip any sizing suffix so we control it ourselves
+        base = re.sub(r'=\w+$', '', u)
+        if len(base) > 60:  # filter out tiny icons
+            all_urls.add(base)
+
+    # Clean up URLs: strip sizing params, deduplicate, filter out icons/avatars
+    clean_urls = set()
+    for u in all_urls:
+        base = re.sub(r'=[\w\-]+$', '', u)   # strip =w800, =s512, etc.
+        base = re.sub(r'/s\d+(?:-[a-z])?$', '', base)  # strip /s512-c etc.
+        if len(base) > 55:
+            clean_urls.add(base)
+
+    if not clean_urls:
+        print("\nERROR: No images found.")
+        print("  • Make sure the album is set to 'Anyone with the link can view'")
+        print("  • Try opening the URL in a browser to confirm it's accessible")
+        sys.exit(1)
+
+    # Sort for stable ordering (Google Photos URLs are not naturally ordered,
+    # but consistent sorting prevents unnecessary git diffs on re-runs)
+    sorted_urls = sorted(clean_urls)
+
+    images = [
+        {
+            "base_url":    u,
+            "display_url": u + "=w1200",   # full-quality for lightbox
+            "thumb_url":   u + "=w600",    # thumbnail for grid
+        }
+        for u in sorted_urls
+    ]
+
+    print(f"  Found {len(images)} images")
+    return images, album_title
 
 
 # ── HTML generation ───────────────────────────────────────────────────────────
 
 def build_gallery_html(
-    images: list[dict],
+    images: list,
     album_url: str,
     album_title: str = "Photos",
-    page_title: str = "Interests",
 ) -> str:
-    """Render a complete self-contained interests.html with a masonry lightbox gallery."""
+    """Render a complete self-contained interests.html with masonry gallery + lightbox."""
 
-    # Build the JS image data array
     js_images = json.dumps(
         [{"src": img["display_url"], "thumb": img["thumb_url"]} for img in images],
-        indent=2
+        indent=2,
     )
 
-    # Build the thumbnail <figure> elements
-    figures = []
-    for i, img in enumerate(images):
-        figures.append(
-            f'      <figure class="gal-item" data-index="{i}">'
-            f'<img src="{img["thumb_url"]}" alt="{img["alt"]}" loading="lazy" /></figure>'
-        )
-    figures_html = "\n".join(figures)
+    figures_html = "\n".join(
+        f'      <figure class="gal-item" data-index="{i}">'
+        f'<img src="{img["thumb_url"]}" alt="Photo {i+1}" loading="lazy" /></figure>'
+        for i, img in enumerate(images)
+    )
 
     return textwrap.dedent(f"""\
     <!DOCTYPE html>
@@ -173,7 +187,7 @@ def build_gallery_html(
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>{page_title} &mdash; Lucas Hinsenkamp, PhD</title>
+      <title>Interests &mdash; Lucas Hinsenkamp, PhD</title>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
@@ -194,7 +208,6 @@ def build_gallery_html(
         main {{ flex: 1; }}
         .container {{ max-width: var(--max); margin: 0 auto; padding: 0 2rem; }}
 
-        /* Nav */
         nav {{ position: sticky; top: 0; z-index: 100; background: rgba(247,245,240,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: 1rem 0; }}
         nav .container {{ display: flex; justify-content: space-between; align-items: baseline; }}
         .nav-name {{ font-size: 0.78rem; font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); text-decoration: none; }}
@@ -203,103 +216,18 @@ def build_gallery_html(
         .nav-links a:hover {{ color: var(--ink); }}
         .nav-links a.active {{ color: var(--ink); border-bottom: 1px solid var(--ink); padding-bottom: 1px; }}
 
-        /* Page header */
         .page-header {{ padding: 5rem 0 3.5rem; border-bottom: 1px solid var(--rule); }}
         .eyebrow {{ font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }}
         h1 {{ font-size: clamp(2.2rem, 6vw, 3.5rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; }}
         h1 em {{ font-style: italic; }}
         .page-header p.sub {{ font-size: 1.05rem; color: #5a5a58; max-width: 500px; margin-top: 1.25rem; line-height: 1.75; }}
-        .album-link {{ display: inline-block; margin-top: 1.25rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }}
-        .album-link:hover {{ color: var(--accent); border-color: var(--accent); }}
 
-        /* Section */
         .section-wrap {{ padding: 3.5rem 0; }}
         .section-header {{ display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 2.5rem; }}
         .section-label {{ font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }}
         .section-rule {{ flex: 1; height: 1px; background: var(--rule); }}
-        .image-count {{ font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }}
+        .image-count {{ font-family: var(--mono); font-size: 0.65rem; color: var(--muted); white-space: nowrap; }}
 
-        /* Masonry gallery */
-        .gallery {{
-          columns: 3 160px;
-          column-gap: 0.6rem;
-        }}
-        .gal-item {{
-          break-inside: avoid;
-          margin-bottom: 0.6rem;
-          cursor: pointer;
-          overflow: hidden;
-          border-radius: 2px;
-          background: var(--rule);
-        }}
-        .gal-item img {{
-          display: block;
-          width: 100%;
-          height: auto;
-          transition: transform 0.35s ease, opacity 0.2s;
-          opacity: 0;
-        }}
-        .gal-item img.loaded {{ opacity: 1; }}
-        .gal-item:hover img {{ transform: scale(1.03); }}
-
-        /* Lightbox */
-        #lightbox {{
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(20,20,18,0.96);
-          z-index: 1000;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-        }}
-        #lightbox.open {{ display: flex; }}
-        #lb-img {{
-          max-width: min(92vw, 1100px);
-          max-height: 85vh;
-          object-fit: contain;
-          border-radius: 2px;
-          display: block;
-        }}
-        #lb-counter {{
-          font-family: var(--mono);
-          font-size: 0.68rem;
-          color: rgba(255,255,255,0.4);
-          letter-spacing: 0.1em;
-          margin-top: 1rem;
-        }}
-        .lb-btn {{
-          position: fixed;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          color: rgba(255,255,255,0.5);
-          font-size: 2rem;
-          cursor: pointer;
-          padding: 1rem;
-          line-height: 1;
-          transition: color 0.2s;
-          font-family: var(--mono);
-        }}
-        .lb-btn:hover {{ color: #fff; }}
-        #lb-prev {{ left: 1rem; }}
-        #lb-next {{ right: 1rem; }}
-        #lb-close {{
-          position: fixed;
-          top: 1.25rem;
-          right: 1.5rem;
-          background: none;
-          border: none;
-          color: rgba(255,255,255,0.5);
-          font-size: 1.5rem;
-          cursor: pointer;
-          font-family: var(--mono);
-          transition: color 0.2s;
-        }}
-        #lb-close:hover {{ color: #fff; }}
-
-        /* Interest blurbs */
         .interests-section {{ padding: 3.5rem 0; border-bottom: 1px solid var(--rule); }}
         .interest-entry {{ padding: 2rem 0; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 140px 1fr; gap: 0 2rem; }}
         .interest-entry:first-of-type {{ border-top: none; padding-top: 0; }}
@@ -307,7 +235,28 @@ def build_gallery_html(
         .interest-body h3 {{ font-size: 1.15rem; font-weight: 400; margin-bottom: 0.4rem; }}
         .interest-body p {{ font-size: 0.95rem; color: #4a4a48; line-height: 1.75; }}
 
-        /* Footer */
+        /* Masonry gallery */
+        .gallery {{ columns: 3 160px; column-gap: 0.6rem; }}
+        .gal-item {{ break-inside: avoid; margin-bottom: 0.6rem; cursor: pointer; overflow: hidden; border-radius: 2px; background: var(--rule); }}
+        .gal-item img {{ display: block; width: 100%; height: auto; transition: transform 0.35s ease, opacity 0.3s; opacity: 0; }}
+        .gal-item img.loaded {{ opacity: 1; }}
+        .gal-item:hover img {{ transform: scale(1.04); }}
+
+        .album-link {{ display: inline-block; margin-top: 1.5rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }}
+        .album-link:hover {{ color: var(--accent); border-color: var(--accent); }}
+
+        /* Lightbox */
+        #lightbox {{ display: none; position: fixed; inset: 0; background: rgba(20,20,18,0.96); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }}
+        #lightbox.open {{ display: flex; }}
+        #lb-img {{ max-width: min(92vw, 1100px); max-height: 85vh; object-fit: contain; border-radius: 2px; display: block; }}
+        #lb-counter {{ font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; margin-top: 1rem; }}
+        .lb-btn {{ position: fixed; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.45); font-size: 2rem; cursor: pointer; padding: 1rem; line-height: 1; transition: color 0.2s; }}
+        .lb-btn:hover {{ color: #fff; }}
+        #lb-prev {{ left: 1rem; }}
+        #lb-next {{ right: 1rem; }}
+        #lb-close {{ position: fixed; top: 1.25rem; right: 1.5rem; background: none; border: none; color: rgba(255,255,255,0.45); font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }}
+        #lb-close:hover {{ color: #fff; }}
+
         footer {{ padding: 3rem 0; border-top: 1px solid var(--rule); }}
         footer .container {{ display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }}
         .footer-copy {{ font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }}
@@ -352,14 +301,12 @@ def build_gallery_html(
             <p class="sub fade-up delay-2">The things that refuel me, keep me curious, and occasionally make their way into how I think about problems.</p>
           </div>
 
-          <!-- ── Personal interests ── -->
+          <!-- ── Personal interests — replace with your own ── -->
           <div class="interests-section">
             <div class="section-header">
               <span class="section-label">Interests</span>
               <span class="section-rule"></span>
             </div>
-
-            <!-- Replace these entries with your own -->
             <div class="interest-entry">
               <div class="interest-label">Interest one</div>
               <div class="interest-body">
@@ -367,7 +314,6 @@ def build_gallery_html(
                 <p>A sentence or two about what draws you to this. Keep it personal — this is where you get to sound like a human, not a resume.</p>
               </div>
             </div>
-
             <div class="interest-entry">
               <div class="interest-label">Interest two</div>
               <div class="interest-body">
@@ -375,7 +321,6 @@ def build_gallery_html(
                 <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
               </div>
             </div>
-
             <div class="interest-entry">
               <div class="interest-label">Interest three</div>
               <div class="interest-body">
@@ -390,7 +335,7 @@ def build_gallery_html(
             <div class="section-header">
               <span class="section-label">{album_title}</span>
               <span class="section-rule"></span>
-              <span class="image-count">{len(images)} photos</span>
+              <span class="image-count">{len(images)}&nbsp;photos</span>
             </div>
 
             <div class="gallery">
@@ -425,54 +370,42 @@ def build_gallery_html(
       </footer>
 
       <script>
-        // ── Lazy-load images ──────────────────────────────────────────────────
+        // Lazy-load fade-in
         document.querySelectorAll('.gal-item img').forEach(img => {{
-          if (img.complete) {{ img.classList.add('loaded'); }}
-          else {{ img.addEventListener('load', () => img.classList.add('loaded')); }}
+          if (img.complete) img.classList.add('loaded');
+          else img.addEventListener('load', () => img.classList.add('loaded'));
         }});
 
-        // ── Image data ───────────────────────────────────────────────────────
         const IMAGES = {js_images};
 
-        // ── Lightbox ─────────────────────────────────────────────────────────
-        const lb       = document.getElementById('lightbox');
-        const lbImg    = document.getElementById('lb-img');
-        const lbClose  = document.getElementById('lb-close');
-        const lbPrev   = document.getElementById('lb-prev');
-        const lbNext   = document.getElementById('lb-next');
-        const lbCount  = document.getElementById('lb-counter');
-        let current    = 0;
+        const lb      = document.getElementById('lightbox');
+        const lbImg   = document.getElementById('lb-img');
+        const lbCount = document.getElementById('lb-counter');
+        let current   = 0;
 
-        function openLightbox(index) {{
-          current = index;
-          showImage();
+        function openLightbox(i) {{
+          current = i; showImage();
           lb.classList.add('open');
           document.body.style.overflow = 'hidden';
         }}
-
         function closeLightbox() {{
           lb.classList.remove('open');
           document.body.style.overflow = '';
         }}
-
         function showImage() {{
           lbImg.src = IMAGES[current].src;
           lbCount.textContent = (current + 1) + ' / ' + IMAGES.length;
         }}
-
         function prev() {{ current = (current - 1 + IMAGES.length) % IMAGES.length; showImage(); }}
         function next() {{ current = (current + 1) % IMAGES.length; showImage(); }}
 
-        document.querySelectorAll('.gal-item').forEach(fig => {{
-          fig.addEventListener('click', () => openLightbox(parseInt(fig.dataset.index)));
-        }});
-
-        lbClose.addEventListener('click', closeLightbox);
-        lbPrev.addEventListener('click', prev);
-        lbNext.addEventListener('click', next);
-
+        document.querySelectorAll('.gal-item').forEach(fig =>
+          fig.addEventListener('click', () => openLightbox(+fig.dataset.index))
+        );
+        document.getElementById('lb-close').addEventListener('click', closeLightbox);
+        document.getElementById('lb-prev').addEventListener('click', prev);
+        document.getElementById('lb-next').addEventListener('click', next);
         lb.addEventListener('click', e => {{ if (e.target === lb) closeLightbox(); }});
-
         document.addEventListener('keydown', e => {{
           if (!lb.classList.contains('open')) return;
           if (e.key === 'ArrowLeft')  prev();
@@ -489,40 +422,28 @@ def build_gallery_html(
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
+    check_playwright()
+
     parser = argparse.ArgumentParser(
         description="Generate a static photo gallery from a public Google Photos album."
     )
-    parser.add_argument(
-        "--album", required=True,
-        help="Public Google Photos shared album URL (goo.gl/photos or photos.app.goo.gl link)"
-    )
-    parser.add_argument(
-        "--out", default="interests.html",
-        help="Output HTML file path (default: interests.html)"
-    )
-    parser.add_argument(
-        "--title", default=None,
-        help="Override the gallery section title (auto-detected from album if omitted)"
-    )
+    parser.add_argument("--album", required=True, help="Public Google Photos shared album URL")
+    parser.add_argument("--out",   default="interests.html", help="Output file (default: interests.html)")
+    parser.add_argument("--title", default=None, help="Override gallery section title")
     args = parser.parse_args()
 
-    print(f"Fetching album: {args.album}")
-    html = fetch_album_page(args.album)
+    print(f"Fetching album...")
+    images, detected_title = fetch_album_images(args.album)
 
-    album_title = args.title or extract_album_title(html) or "Photos"
+    album_title = args.title or detected_title
     print(f"Album title: {album_title}")
 
-    images = extract_images(html)
-
     out_path = Path(args.out)
-    gallery_html = build_gallery_html(
-        images=images,
-        album_url=args.album,
-        album_title=album_title,
+    out_path.write_text(
+        build_gallery_html(images=images, album_url=args.album, album_title=album_title),
+        encoding="utf-8",
     )
-
-    out_path.write_text(gallery_html, encoding="utf-8")
-    print(f"✓ Wrote {len(images)} photos → {out_path}")
+    print(f"✓ Written → {out_path}  ({len(images)} photos)")
 
 
 if __name__ == "__main__":
