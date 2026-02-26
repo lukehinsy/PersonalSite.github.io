@@ -285,7 +285,7 @@ def build_gallery_html(
         .delay-1 {{ animation-delay: 0.1s; }}
         .delay-2 {{ animation-delay: 0.2s; }}
 
-        @media (max-width: 540px) {{
+        @media (max-width: 840px) {{
           nav .container {{ flex-direction: column; gap: 0.75rem; }}
           .nav-links {{ gap: 1.25rem; }}
           .gallery {{ columns: 2 120px; }}
@@ -326,7 +326,7 @@ def build_gallery_html(
             <div class="interest-entry">
              <div class="interest-label">Photography</div>
               <div class="interest-body">
-                <h3>Because everyone thinks they're a <u><b>P</b></u>hotographer</h3>
+                <h3>Because everyone thinks they're a photographer</h3>
                 <p>Like many, many, many people, I enjoy photography.  I do, however, try to adhere to the mentality of <u>making</u> photos and not <i>taking</i> them, putting effort into a photo rather than capturing a snapshot. </p>
                 
               <!-- ── Photo gallery ── -->
@@ -343,9 +343,9 @@ def build_gallery_html(
                   </div>
                 </div>
 
-              </div>
+               </div>
 
-              </div>
+             </div>
             </main>
 
           <!-- Lightbox -->
@@ -358,25 +358,11 @@ def build_gallery_html(
           </div>
 
               
-        </div>
+          </div>
               
       </div>
     </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest two</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>What do you actually do, and why does it matter to you? The more specific, the more memorable.</p>
-              </div>
-            </div>
-            <div class="interest-entry">
-              <div class="interest-label">Interest three</div>
-              <div class="interest-body">
-                <h3>Title of Interest</h3>
-                <p>Maybe something unexpected — an interest that surprises people or gives a different angle on who you are.</p>
-              </div>
-            </div>
-          </div>
+            
 
           
 
