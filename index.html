@@ -1,5 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+<div id="wip-watermark">Under Construction</div>
+
+<style>
+  #wip-watermark {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(2rem, 8vw, 5rem);
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(45, 90, 61, 0.12);
+    pointer-events: none;        /* lets clicks pass through to page content */
+    user-select: none;
+    z-index: 9999;
+    transform: rotate(-30deg);
+    white-space: nowrap;
+  }
+</style>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -78,7 +100,7 @@
           I'm an analytic consultant with a PhD in social psychology and a habit of making complex things click. Over the past decade I've helped organizations &mdash; from scrappy research shops to large insurers &mdash; turn murky business questions into frameworks that actually get used. I like the messy middle: the part where the problem isn't fully defined yet and you have to earn the insight rather than inherit it.
         </p>
         <p class="hero-bio fade-up delay-3">
-          These days I'm leading analytics at Nationwide, working across consumer segmentation, sales optimization, and a handful of things that didn't have names when I started them. I care a lot about rigor, but I care just as much about making sure the work lands &mdash; with stakeholders, in decisions, in the world.
+          These days I'm a strategic lead in analytics at Nationwide, working across consumer segmentation, sales optimization, and a handful of things that didn't have names when I started them. I care a lot about rigor, but I care just as much about making sure the work lands &mdash; with stakeholders, in decisions, in the world.
         </p>
         <div class="hero-links fade-up delay-4">
           <a href="/cdn-cgi/l/email-protection#2e4647405d4b40454f435e6e49434f4742004d4143">Email</a>
